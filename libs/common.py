@@ -16,16 +16,17 @@ import pandas as pd
 import traceback
 import akshare as ak
 from log.logUtils import logger
+import libs.basic_conf as basic_conf
 
 # 使用环境变量获得数据库。兼容开发模式可docker模式。
-MYSQL_HOST = os.environ.get('MYSQL_HOST') if (os.environ.get('MYSQL_HOST') != None) else "127.0.0.1"
-MYSQL_USER = os.environ.get('MYSQL_USER') if (os.environ.get('MYSQL_USER') != None) else "root"
-MYSQL_PWD = os.environ.get('MYSQL_PWD') if (os.environ.get('MYSQL_PWD') != None) else "mysql0704"
-MYSQL_DB = os.environ.get('MYSQL_DB') if (os.environ.get('MYSQL_DB') != None) else "vhr"
+MYSQL_HOST = os.environ.get('MYSQL_HOST') if (os.environ.get('MYSQL_HOST') is not None) else basic_conf.cfg_mysql_host
+MYSQL_USER = os.environ.get('MYSQL_USER') if (os.environ.get('MYSQL_USER') is not None) else basic_conf.cfg_mysql_user
+MYSQL_PWD = os.environ.get('MYSQL_PWD') if (os.environ.get('MYSQL_PWD') is not None) else basic_conf.cfg_mysql_pwd
+MYSQL_DB = os.environ.get('MYSQL_DB') if (os.environ.get('MYSQL_DB') is not None) else basic_conf.cfg_mysql_db
 
 logger.debug("MYSQL_HOST :%s, MYSQL_USER :%s, MYSQL_DB :%s", MYSQL_HOST, MYSQL_USER, MYSQL_DB)
 MYSQL_CONN_URL = "mysql+mysqldb://" + MYSQL_USER + ":" + MYSQL_PWD + "@" + MYSQL_HOST + ":3306/" + MYSQL_DB + "?charset=utf8mb4"
-logger.info("MYSQL_CONN_URL :", MYSQL_CONN_URL)
+logger.info("MYSQL_CONN_URL : %s", MYSQL_CONN_URL)
 
 __version__ = "2.0.0"
 # 每次发布时候更新。
@@ -38,7 +39,8 @@ def engine():
 def engine_to_db(to_db):
     MYSQL_CONN_URL_NEW = "mysql+mysqldb://" + MYSQL_USER + ":" + MYSQL_PWD + "@" + MYSQL_HOST + ":3306/" + to_db \
                          + "?charset=utf8mb4"
-    return create_engine(MYSQL_CONN_URL_NEW, encoding='utf8', convert_unicode=True)
+    # echo = True 是为了方便 控制台 logging 输出一些sql信息，默认是False
+    return create_engine(MYSQL_CONN_URL_NEW, encoding='utf8', convert_unicode=True, echo=True)
 
 
 def conn():
@@ -103,13 +105,28 @@ def insert(sql, params=()):
     """
     插入数据。
     :param sql:
-    :param params:
+    :param params: 元祖类型
     :return:
     """
     with conn() as db:
         logger.info("insert sql: %s", sql)
         try:
             db.execute(sql, params)
+        except Exception as e:
+            logger.error("insert sql error :%s %s", e.__class__.__name__, e)
+
+
+def insert_batch(sql, params=[()]):
+    """
+    批量插入数据。
+    :param sql:
+    :param params: 传递元祖类型的list集合
+    :return:
+    """
+    with conn() as db:
+        logger.info("insert sql: %s", sql)
+        try:
+            db.executemany(sql, params)
         except Exception as e:
             logger.error("insert sql error :%s %s", e.__class__.__name__, e)
 
@@ -206,27 +223,32 @@ def run_with_args(run_fun):
 
 
 # 设置基础目录，每次加载使用。
-bash_stock_tmp = "/Users/sam/data/cache/hist_data_cache/%s/%s/"
+bash_stock_tmp = basic_conf.cfg_stock_history_tmp
 if not os.path.exists(bash_stock_tmp):
     os.makedirs(bash_stock_tmp)  # 创建多个文件夹结构。
-    print("######################### init tmp dir #########################")
+    logger.info("######################### init tmp dir #########################")
 
 
-# 增加读取股票缓存方法。加快处理速度。
 def get_hist_data_cache(code, date_start, date_end):
+    """
+    增加读取股票缓存方法。加快处理速度
+    :param code:
+    :param date_start:
+    :param date_end:
+    :return:
+    """
     cache_dir = bash_stock_tmp % (date_end[0:6], date_end)
     # 如果没有文件夹创建一个。月文件夹和日文件夹。方便删除。
-    # print("cache_dir:", cache_dir)
     if not os.path.exists(cache_dir):
         os.makedirs(cache_dir)
     cache_file = cache_dir + "%s^%s.gzip.pickle" % (date_end, code)
     # 如果缓存存在就直接返回缓存数据。压缩方式。
     if os.path.isfile(cache_file):
-        print("######### read from cache #########", cache_file)
+        logger.info("######### read from cache %s #########" % cache_file)
         return pd.read_pickle(cache_file, compression="gzip")
     else:
-        print("######### get data, write cache #########", code, date_start, date_end)
-        stock = ak.stock_zh_a_hist(symbol= code, start_date=date_start, end_date=date_end, adjust="")
+        logger.info("######### get data, write cache ######### %s %s %s" % (code, date_start, date_end))
+        stock = ak.stock_zh_a_hist(symbol=code, start_date=date_start, end_date=date_end, adjust="")
         if stock.empty:
             return None
         stock.columns = ['date', 'open', 'close', 'high', 'low', 'volume', 'amount', 'amplitude', 'quote_change',

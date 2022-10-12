@@ -240,6 +240,7 @@ def concat_guess_data(stock_column, data):
     # print("##########tmp_dic: ", tmp_dic)
     print("########################## BEGIN ##########################")
     stock_guess = pd.DataFrame(tmp_dic, index=data.index.values)
+    print("stock_guess:", stock_guess)
     print(stock_guess.columns.values)
     # print(stock_guess.head())
     stock_guess = stock_guess.apply(apply_guess, stock_column=stock_column, axis=1)  # , axis=1)
@@ -259,8 +260,8 @@ def apply_guess(tmp, stock_column):
     date = tmp["date"]
     code = tmp["code"]
     date_end = datetime.datetime.strptime(date, "%Y%m%d")
-    date_start = (date_end + datetime.timedelta(days=-100)).strftime("%Y-%m-%d")
-    date_end = date_end.strftime("%Y-%m-%d")
+    date_start = (date_end + datetime.timedelta(days=-100)).strftime("%Y%m%d")
+    date_end = date_end.strftime("%Y%m%d")
     # print(code, date_start, date_end)
     # open, high, close, low, volume, price_change, p_change, ma5, ma10, ma20, v_ma5, v_ma10, v_ma20, turnover
     # 使用缓存方法。加快计算速度。
@@ -285,10 +286,10 @@ def apply_guess(tmp, stock_column):
     # print(stock.head())
     # open  high  close   low     volume
     # stock = pd.DataFrame({"close": stock["close"]}, index=stock.index.values)
-    stock = stock.sort_index(0)  # 将数据按照日期排序下。
+    stock = stock.sort_index(axis=0)  # 将数据按照日期排序下。
 
     stock["date"] = stock.index.values  # 增加日期列。
-    stock = stock.sort_index(0)  # 将数据按照日期排序下。
+    stock = stock.sort_index(axis=0)  # 将数据按照日期排序下。
     # print(stock) [186 rows x 14 columns]
     # 初始化统计类
     # stockStat = stockstats.StockDataFrame.retype(pd.read_csv('002032.csv'))

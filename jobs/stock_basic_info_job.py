@@ -1,12 +1,7 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
-import os
-import sys
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-sys.path.append(BASE_DIR)
-
 """
-通过获取A股中所有股票的实时行情，整理出当前A股的股票代码
+获取A股的股票代码
 """
 import numpy as np
 import pandas as pd
@@ -42,7 +37,7 @@ def stock_a(code) -> bool:
 def stock_a_filter_st(name) -> bool:
     """
     判断是否为ST股，过滤掉 st 股票
-    :param name: 骨片简称
+    :param name: 股票简称
     :return:
     """
     if name.find("ST") == -1:
@@ -128,6 +123,7 @@ def load_a_stock():
         logger.error('错误明细是：%s %s', e.__class__.__name__, e)
         traceback.print_exc()
 
+
 """
 main函数入口
 3种传递参数格式：
@@ -138,7 +134,7 @@ main函数入口
 if __name__ == '__main__':
     # 执行数据初始化。
     # 使用方法传递。
-    print("------------load stock_basic_info run ---------------")
+    logger.info("------------load stock_basic_info run ---------------")
     load_a_stock()
 
-print("............... run .........")
+logger.info("............... run .........")

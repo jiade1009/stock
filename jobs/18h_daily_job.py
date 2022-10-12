@@ -62,9 +62,11 @@ def stat_all(tmp_datetime):
         # print(data.index)
         # 解决ESP 小数问题。
         # data["esp"] = data["esp"].round(2)  # 数据保留2位小数
+        #显示其head内容
         data.columns = ['index', 'code', 'name', 'latest_price', 'quote_change', 'ups_downs', 'volume', 'turnover',
                         'amplitude', 'high', 'low', 'open', 'closed', 'quantity_ratio', 'turnover_rate', 'pe_dynamic',
-                        'pb']
+                        'pb', 'total_market', 'circulate_market', 'growth-rate', 'five_minute', 'sixty-up_down',
+                        'to_date_up_down']
 
         data = data.loc[data["code"].apply(stock_a)].loc[data["name"].apply(stock_a_filter_st)].loc[
             data["latest_price"].apply(stock_a_filter_price)]
@@ -127,9 +129,8 @@ def stat_all(tmp_datetime):
 
     try:
 
-        print("################ tmp_datetime : " + datetime_str)
-
-        stock_dzjy_mrtj = ak.stock_dzjy_mrtj(start_date=datetime_str, end_date=datetime_str)
+        print("################ tmp_datetime : " + datetime_int)
+        stock_dzjy_mrtj = ak.stock_dzjy_mrtj(start_date=datetime_int, end_date=datetime_int)
         print(stock_dzjy_mrtj)
 
         stock_dzjy_mrtj.columns = ['index', 'trade_date', 'code', 'name', 'quote_change', 'close_price', 'average_price',
@@ -163,10 +164,13 @@ def stat_all(tmp_datetime):
         common.insert_db(stock_dzjy_mrtj, "stock_dzjy_mrtj", True, "`date`,`code`")
 
     except Exception as e:
-        print("error :", e)
+        print(" stock_dzjy_mrtj error :", e)
 
 # main函数入口
 if __name__ == '__main__':
     # 执行数据初始化。
     # 使用方法传递。
+    print("------------18h_daily_job run ---------------")
     tmp_datetime = common.run_with_args(stat_all)
+
+print("............... run .........")
