@@ -106,14 +106,18 @@ def insert(sql, params=()):
     插入数据。
     :param sql:
     :param params: 元祖类型
-    :return:
+    :return: 返回新插入的数据id
     """
+    new_id = None
     with conn() as db:
         logger.info("insert sql: %s", sql)
         try:
             db.execute(sql, params)
+            # 最后插入行的id
+            new_id = db.lastrowid
         except Exception as e:
             logger.error("insert sql error :%s %s", e.__class__.__name__, e)
+    return new_id
 
 
 def insert_batch(sql, params=[()]):
@@ -257,3 +261,4 @@ def get_hist_data_cache(code, date_start, date_end):
         # print(stock)
         stock.to_pickle(cache_file, compression="gzip")
         return stock
+
