@@ -137,4 +137,3 @@ if __name__ == '__main__':
     logger.info("------------load stock_basic_info run ---------------")
     load_a_stock()
 
-logger.info("............... run .........")

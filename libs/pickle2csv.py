@@ -14,10 +14,20 @@ def pickle2csv(src: str, dest: str):
 
 
 if __name__ == '__main__':
-    src1 = "/Users/sam/data/stock/cache/hist_weekly_ema_cache/18_25_75/202209/20200101_20220901" + \
-    "/close_ema_18_20200101_20220901^000001.gzip.pickle"
-    pickle2csv(src1, "/Users/sam/Desktop/close_ema_18^000001.xlsx")
+    src0 = "/Users/sam/data/stock/cache/hist_weekly_close_ema_cache/18_25_75/202210/20200101_20221017" + \
+    "/close_ema_18_20200101_20221017^000030.gzip.pickle"
+    src1 = "/Users/sam/data/stock/cache/hist_weekly_close_ema_cache/18_25_75/202210/20200101_20221018" + \
+           "/close_ema_18_20200101_20221018^000030.gzip.pickle"
+    # pickle2csv(src0, "/Users/sam/Desktop/17_close_ema_18^000030.xlsx")
+    # pickle2csv(src1, "/Users/sam/Desktop/18_close_ema_18^000030.xlsx")
 
-    src2 = "/Users/sam/data/stock/cache/hist_weekly_cache/202209/20200101_20220901" + \
-           "/20200101_20220901^000001.gzip.pickle"
-    pickle2csv(src2, "/Users/sam/Desktop/close_^000001.xlsx")
+    src2 = "/Users/sam/data/stock/cache/hist_weekly_cache/202210/20200101_20221017" + \
+           "/20200101_20221017^000030.gzip.pickle"
+
+    src3 = "/Users/sam/data/stock/cache/hist_weekly_cache/202210/20200101_20221018" + \
+           "/20200101_20221018^000030.gzip.pickle"
+    src4 = "/Users/sam/data/stock/cache/hist_weekly_cache/202210/20200101_20221019" + \
+           "/20200101_20221019^000030.gzip.pickle"
+    pickle2csv(src2, "/Users/sam/Desktop/17_close_^000030.xlsx")
+    pickle2csv(src3, "/Users/sam/Desktop/18_close_^000030.xlsx")
+    pickle2csv(src4, "/Users/sam/Desktop/19_close_^000030.xlsx")

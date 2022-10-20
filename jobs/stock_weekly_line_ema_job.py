@@ -18,10 +18,16 @@ import libs.basic_conf as basic_conf
 
 batch_size = 1  # 每100条数据加载一次
 # 设置基础目录，每次加载使用。
-stock_weekly_ema_dir = basic_conf.cfg_stock_weekly_ema_history_tmp
-if not os.path.exists(stock_weekly_ema_dir):
-    os.makedirs(stock_weekly_ema_dir)  # 创建多个文件夹结构。
-    logger.info("######################### init stock_weekly_ema_dir dir #########################")
+stock_weekly_close_ema_dir = basic_conf.cfg_stock_weekly_close_ema_history_tmp
+if not os.path.exists(stock_weekly_close_ema_dir):
+    os.makedirs(stock_weekly_close_ema_dir)  # 创建多个文件夹结构。
+    logger.info("######################### init stock_weekly_close_ema_dir dir #########################")
+
+stock_weekly_high_ema_dir = basic_conf.cfg_stock_weekly_high_ema_history_tmp
+if not os.path.exists(stock_weekly_high_ema_dir):
+    os.makedirs(stock_weekly_high_ema_dir)  # 创建多个文件夹结构。
+    logger.info("######################### init stock_weekly_high_ema_dir dir #########################")
+
 # 默认三根ema数据线
 default_ema_index_values = (18, 25, 75)
 # 数据表插入语句
@@ -36,8 +42,9 @@ def save_ema_by_weekly_line_id(weekly_line_id: int):
     :param weekly_line_id:
     :return: 操作状态，成功则返回新增的weekly_ema_result_id，失败返回-1
     """
-    weekly_line_result_bean = common.select(basic_conf.cfg_sql_select_weekly_by_id, params={weekly_line_id})
-    logger.info(weekly_line_result_bean)
+    logger.info(".........stock_weekly_line_ema_job run .........")
+    weekly_line_result_bean = common.select(basic_conf.cfg_sql_select_weekly_by_id, params=[weekly_line_id])
+    # logger.info(weekly_line_result_bean)
     if len(weekly_line_result_bean) > 0:
         return save_weekly_line_ema(weekly_line_result_bean[0])
     else:
@@ -57,7 +64,7 @@ def save_weekly_line_ema(weekly_line_result_bean: dict):
     date_research = weekly_line_result_bean[2]
     date_start = weekly_line_result_bean[3]
     # 获取系统定义的ema指标  `id`, `code`, `name`, `value`, `sort_order`, `type`
-    ema_index_list = common.select(basic_conf.cfg_sql_select_databasetype_by_type, params={"stk_ema"})
+    ema_index_list = common.select(basic_conf.cfg_sql_select_databasetype_by_type, params=["stk_ema"])
     if len(ema_index_list) == 3:
         ema_index_values = (ema_index_list[0][3], ema_index_list[1][3], ema_index_list[2][3])
     else:
@@ -68,13 +75,18 @@ def save_weekly_line_ema(weekly_line_result_bean: dict):
     weekly_line_dir = basic_conf.cfg_stock_weekly_history_tmp % (date_research[0:6], date_start+"_"+date_research)
     dirs_files = fileUtils.traversal_files(weekly_line_dir)
 
-    # 周线ema数据保存路径
     ema_join = "_".join(ema_index_values)
-    cache_dir = stock_weekly_ema_dir % (ema_join, date_research[0:6], date_start+"_"+date_research)
-    # 如果没有文件夹创建一个。月文件夹和日文件夹。方便删除。
-    if not os.path.exists(cache_dir):
-        os.makedirs(cache_dir)
-    logger.info("保存路径：%s" % cache_dir)
+    # 周线close_ema数据保存路径
+    cache_close_ema_dir = stock_weekly_close_ema_dir % (ema_join, date_research[0:6], date_start+"_"+date_research)
+    if not os.path.exists(cache_close_ema_dir):
+        os.makedirs(cache_close_ema_dir)
+    logger.info("close_ema_保存路径：%s" % cache_close_ema_dir)
+
+    # 周线high_ema数据保存路径
+    cache_high_ema_dir = stock_weekly_high_ema_dir % (ema_join, date_research[0:6], date_start+"_"+date_research)
+    if not os.path.exists(cache_high_ema_dir):
+        os.makedirs(cache_high_ema_dir)
+    logger.info("high_ema_保存路径：%s" % cache_high_ema_dir)
 
     files = dirs_files["files"]
     result_desc = ""
@@ -92,13 +104,21 @@ def save_weekly_line_ema(weekly_line_result_bean: dict):
                 # 进行ema数据的生成
                 stock_df = stockstats.wrap(weekly_line_df)
                 for idx in ema_index_values:
-                    close_idx_ema = stock_df.get("close_%s_ema" % idx)
-                    cache_file = cache_dir + "close_ema_%s_%s_%s^%s.gzip.pickle" % (idx, date_start, date_research, stock_code)
-                    close_idx_ema.to_pickle(cache_file, compression="gzip")
+                    close_idx_ema = stock_df.get("close_%s_ema" % idx)  # 格式：date	close_18_ema
+                    cache_close_file = cache_close_ema_dir + "close_ema_%s_%s_%s^%s.gzip.pickle" % (idx, date_start,
+                                                                                              date_research, stock_code)
+                    close_idx_ema.to_pickle(cache_close_file, compression="gzip")
                     logger.info("成功生成 close_ema_%s_%s_%s^%s 数据指标" % (idx, date_start, date_research, stock_code))
+
+                    high_idx_ema = stock_df.get("high_%s_ema" % idx)  # 格式：date	high_18_ema
+                    cache_high_file = cache_high_ema_dir + "high_ema_%s_%s_%s^%s.gzip.pickle" % (idx, date_start,
+                                                                                                 date_research,
+                                                                                                 stock_code)
+                    high_idx_ema.to_pickle(cache_high_file, compression="gzip")
+                    logger.info("成功生成 high_ema_%s_%s_%s^%s 数据指标" % (idx, date_start, date_research, stock_code))
     # 开始保存ema生成结果信息
     datetime_end = datetime.datetime.now()
-    result_status = 0 if len(result_desc) == 0 else 1
+    result_status = 0 if len(result_desc) == 0 else -1
 
     sql_params = (datetime_begin.strftime("%Y-%m-%d %H:%M:%S"), datetime_end.strftime("%Y-%m-%d %H:%M:%S"),
                   result_status, result_desc, weekly_line_result_bean[0], ema_join)
@@ -106,6 +126,5 @@ def save_weekly_line_ema(weekly_line_result_bean: dict):
     return weekly_ema_result_id
 
 
-logger.info(".........stock_weekly_line_ema_job run .........")
 if __name__ == '__main__':
-    save_ema_by_weekly_line_id(weekly_line_id=6)
+    save_ema_by_weekly_line_id(weekly_line_id=7)

@@ -1,4 +1,5 @@
 import logging
+from logging import handlers
 
 # 创建日志记录器
 logger = logging.getLogger()
@@ -9,9 +10,15 @@ logFormat = logging.Formatter('%(asctime)s %(filename)s[line:%(lineno)d] %(level
 
 # 创建一个Handler用于将日志写入文件
 logFile = '/Users/sam/Documents/IdeaProjects/stock/web/log.txt'
-fh = logging.FileHandler(logFile, mode='a', encoding='utf-8')
+# 每隔500字节保存成一个日志文件，备份文件为5个
+# fh = handlers.RotatingFileHandler(logFile, maxBytes=500, backupCount=3)
+# 每隔1个小时，保存一个日志文件，备份文件为3个
+fh = handlers.TimedRotatingFileHandler(logFile, encoding='utf-8', when="D", interval=1, backupCount=7)
+# mode是文件的打开方式。默认是’a’，即添加到文件末尾。
+# fh = logging.FileHandler(logFile, mode='a', encoding='utf-8')
 fh.setLevel(logging.INFO)
 fh.setFormatter(logFormat)
+
 logger.addHandler(fh)
 
 # 同样的，创建一个Handler用于控制台输出日志
