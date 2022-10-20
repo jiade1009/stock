@@ -218,12 +218,12 @@ def run_buy_rule(weekly_line_ema_result_id: int):
     run_result_code = 0
     run_status_desc = "没有筛选出合适的股票"
     if len(white_stock_list) > 0:
-        run_status_desc = "ema18突破ema25的股票：【" + ", ".join(white_stock_list)
-        run_status_desc += "】"
+        run_status_desc = "ema18突破ema25股票：【" + ", ".join(white_stock_list)
+        run_status_desc += "】。"
         run_result_code = 1
     if len(buy_stock_list) > 0:
-        run_status_desc = "筛选出股票：【" + ", ".join(buy_stock_list)
-        run_status_desc += "】"
+        run_status_desc += "满足购买策略股票：【" + ", ".join(buy_stock_list)
+        run_status_desc += "】。"
 
     # sql_params = (datetime_begin.strftime("%Y-%m-%d %H:%M:%S"), datetime_end.strftime("%Y-%m-%d %H:%M:%S"),
     #                   result_status, result_desc, weekly_line_result_bean[0], ema_join)
@@ -241,5 +241,5 @@ def run_buy_rule(weekly_line_ema_result_id: int):
 
 
 if __name__ == '__main__':
-    run_buy_rule(weekly_line_ema_result_id=38)
+    run_buy_rule(weekly_line_ema_result_id=37)
 
