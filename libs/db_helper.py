@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 # @Name        : db_helper.py
-# @Description : TODO
+# @Description : 执行语句查询有结果返回结果没有返回0；增/删/改返回变更数据条数，没有返回0
 # @Author      : sam
 # @Time        : 2022年 10月 23日 09:36
 # @Version     : 1.0
+import traceback
+
 from libs.db_dbutils_init import get_my_connection
 from log.logUtils import logger
-
-"""执行语句查询有结果返回结果没有返回0；增/删/改返回变更数据条数，没有返回0"""
 
 
 class MySqLHelper(object):
@@ -163,6 +163,32 @@ class MySqLHelper(object):
             conn.rollback()
             self.close(cursor, conn)
             return count
+
+    # 存储函数调用(无返回值 ,增删改)
+    # 参数格式 args=(1, 2, 3, 0)
+    def mfunctionVo(self, name, args=None):
+        try:
+            cursor, conn = self.db.getconn()  # 从连接池获取连接
+            cursor.callproc(name, args)
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception:
+            print(traceback.format_exc())
+
+    # 存储函数调用(有返回值,查)
+    # 参数格式 args=(1, 2, 3, 0)
+    def mfunctionRe(self, name, args=None):
+        try:
+            cursor, conn = self.db.getconn()  # 从连接池获取连接
+            cursor.callproc(name, args)
+            conn.commit()
+            res = cursor.fetchall()
+            cursor.close()
+            conn.close()
+        except Exception:
+            print(traceback.format_exc())
+        return res
 
 
 db_helper = MySqLHelper()

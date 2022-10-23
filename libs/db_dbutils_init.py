@@ -1,17 +1,14 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
-import libs.db_config as config
 # @Name        : db_dbutils_init.py
-# @Description : TODO
+# @Description : 创建数据库连接池
 # @Author      : sam
 # @Time        : 2022年 10月 23日 09:29
 # @Version     : 1.0
 from dbutils.pooled_db import PooledDB
 
-"""
-@功能：创建数据库连接池
-"""
+import libs.db_config as config
 
 
 class MyConnectionPool(object):

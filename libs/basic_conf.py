@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # @Name        : basic_conf.py
-# @Description : TODO
+# @Description :
 """
 定义项目中的使用到的参数，进行统一管理配置
 """

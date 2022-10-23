@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # @Name        : mysqlHelper.py
-# @Description : TODO
+# @Description : 数据池的应用
 # @Author      : sam
 # @Time        : 2022年 10月 22日 22:40
 # @Version     : 1.0

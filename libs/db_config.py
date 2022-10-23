@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # @Name        : db_config.py
-# @Description : TODO
+# @Description : pool-db数据池的参数配置文件
 # @Author      : sam
 # @Time        : 2022年 10月 23日 09:26
 # @Version     : 1.0

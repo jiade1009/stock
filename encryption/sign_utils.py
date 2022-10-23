@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # @Name        : sign_utils.py
-# @Description : TODO
+# @Description : md5签名
 # @Author      : sam
 # @Time        : 2022年 10月 21日 15:25
 # @Version     : 1.0

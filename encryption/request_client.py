@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # @Name        : request_client.py
-# @Description : TODO
+# @Description : 客户端签名，发起请求
 # @Author      : sam
 # @Time        : 2022年 10月 21日 15:25
 # @Version     : 1.0

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # @Name        : request_server.py
-# @Description : TODO
+# @Description : 服务端进行签名验签
 # @Author      : sam
 # @Time        : 2022年 10月 21日 15:25
 # @Version     : 1.0

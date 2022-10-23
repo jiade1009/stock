@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # @Name        : encrypt.py
-# @Description : TODO
+# @Description : 参数的数字签名和验签
 # @Author      : sam
 # @Time        : 2022年 10月 21日 21:46
 # @Version     : 1.0
@@ -14,6 +14,11 @@ from qmtclient.logUtils import logger
 
 
 def do_encrypt(params) -> dict:
+    """
+    签名
+    :param params:
+    :return:
+    """
     now_int = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     params['tm'] = now_int
     params['idx'] = base_config.encrypt_idx

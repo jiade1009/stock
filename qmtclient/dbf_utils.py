@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # @Name        : dbf_utils.py
-# @Description : TODO
+# @Description : dbf格式文件的读写操作
 # @Author      : sam
 # @Time        : 2022年 10月 21日 11:34
 # @Version     : 1.0
