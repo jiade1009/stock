@@ -1,5 +1,7 @@
 import logging
 from logging import handlers
+from qmtclient import base_config
+
 
 # 创建日志记录器
 logger = logging.getLogger()
@@ -9,7 +11,7 @@ logger.setLevel(logging.DEBUG)
 logFormat = logging.Formatter('%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s')
 
 # 创建一个Handler用于将日志写入文件
-logFile = '/Users/sam/Documents/IdeaProjects/stock/web/log.txt'
+logFile = base_config.log_file
 # 每隔500字节保存成一个日志文件，备份文件为5个
 # fh = handlers.RotatingFileHandler(logFile, maxBytes=500, backupCount=3)
 # 每隔1个小时，保存一个日志文件，备份文件为3个
@@ -22,7 +24,7 @@ fh.setFormatter(logFormat)
 logger.addHandler(fh)
 
 # 同样的，创建一个Handler用于控制台输出日志
-# ch = logging.StreamHandler()
-# ch.setLevel(logging.INFO)
-# ch.setFormatter(logFormat)
-# logger.addHandler(ch)
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+ch.setFormatter(logFormat)
+logger.addHandler(ch)

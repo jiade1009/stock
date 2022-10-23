@@ -115,10 +115,6 @@ def run_buy_rule(weekly_line_ema_result_id: int):
                     (ema_index_list[2], date_start, date_research, stock_code)
                 close_ema_2 = pd.read_pickle(close_ema_filepath_2, compression="gzip")
 
-                logger.info(" close_ema_0: %s" % close_ema_0)
-                logger.info(" close_ema_1: %s" % close_ema_1)
-                logger.info(" close_ema_2: %s" % close_ema_2)
-
                 # 进行三条high_ema数据的读取 文件名：high_ema_18_20200101_20221013^000001.gzip.pickle
                 high_ema_filepath_0 = \
                     weekly_high_ema_dir + "high_ema_%s_%s_%s^%s.gzip.pickle" % \
@@ -149,8 +145,8 @@ def run_buy_rule(weekly_line_ema_result_id: int):
                 index_begin = (index_end - rule_period) if index_end - rule_period > 0 else 0
                 logger.info(" between: %s ~ %s" % (index_begin, index_end))
                 # 5.2.判断在过去的rule_period周之内 close<=ema75
-                logger.info(" weekly_line: %s" % weekly_line.iloc[index_begin:index_end, 1])
-                logger.info(" close_ema_2: %s" % close_ema_2.iloc[index_begin:index_end])
+                # logger.info(" weekly_line: %s" % weekly_line.iloc[index_begin:index_end, 1])
+                # logger.info(" close_ema_2: %s" % close_ema_2.iloc[index_begin:index_end])
                 if not (weekly_line.iloc[index_begin:index_end, 1] <= close_ema_2.iloc[index_begin:index_end]).all():
                     logger.warning(" 股票code=%s 不满足 close<=ema75 " % stock_code)
                     continue
@@ -158,8 +154,8 @@ def run_buy_rule(weekly_line_ema_result_id: int):
                     logger.info(" =============== 股票code=%s 满足 close<=ema75 " % stock_code)
 
                 # 5.3.判断在过去的rule_period周之内 ema75>=ema18
-                logger.info(" close_ema_0: %s" % close_ema_0.iloc[index_begin:index_end])
-                logger.info(" close_ema_2: %s" % close_ema_2.iloc[index_begin:index_end])
+                # logger.info(" close_ema_0: %s" % close_ema_0.iloc[index_begin:index_end])
+                # logger.info(" close_ema_2: %s" % close_ema_2.iloc[index_begin:index_end])
                 if not (close_ema_0.iloc[index_begin:index_end] <= close_ema_2.iloc[index_begin:index_end]).all():
                     logger.warning(" 股票code=%s 不满足 ema75>=ema18 " % stock_code)
                     continue
@@ -167,10 +163,10 @@ def run_buy_rule(weekly_line_ema_result_id: int):
                     logger.info(" =============== 股票code=%s 满足 ema75>=ema18 " % stock_code)
 
                 # 5.4.寻找转折点信号：ema18_p<=ema25_p and ema18_t>ema25_t ema18开始突破ema25
-                logger.info(" close_ema_0[index_end-2]: %s" % close_ema_0[index_end-2])
-                logger.info(" close_ema_1[index_end-2]: %s" % close_ema_1[index_end-2])
-                logger.info(" close_ema_0[index_end-1]: %s" % close_ema_0[index_end-1])
-                logger.info(" close_ema_1[index_end-1]: %s" % close_ema_1[index_end-1])
+                # logger.info(" close_ema_0[index_end-2]: %s" % close_ema_0[index_end-2])
+                # logger.info(" close_ema_1[index_end-2]: %s" % close_ema_1[index_end-2])
+                # logger.info(" close_ema_0[index_end-1]: %s" % close_ema_0[index_end-1])
+                # logger.info(" close_ema_1[index_end-1]: %s" % close_ema_1[index_end-1])
                 if not (close_ema_0[index_end-2] <= close_ema_1[index_end-2] and
                         close_ema_0[index_end-1] > close_ema_1[index_end-1]):
                     logger.warning(" 股票code=%s 不满足 ema18_p<=ema25_p and ema18_t>ema25_p " % stock_code)
@@ -185,8 +181,8 @@ def run_buy_rule(weekly_line_ema_result_id: int):
                 if buyRule[7] == 1:  # 收敛度判断
                     high_ema_2_0 = high_ema_2[index_end-1]  # 当前的ema75的最高价格
                     high_ema_0_0 = high_ema_0[index_end-1]  # 当前的ema18的最高价格
-                    logger.info(" high_ema_0_0: %s" % high_ema_0_0)
-                    logger.info(" high_ema_2_0: %s" % high_ema_2_0)
+                    # logger.info(" high_ema_0_0: %s" % high_ema_0_0)
+                    # logger.info(" high_ema_2_0: %s" % high_ema_2_0)
                     if not (float(high_ema_2_0)/float(high_ema_0_0) < buyRule[6]):
                         logger.warning(" 股票code=%s 不满足 当天最高价_EMA75/当前最高价_EMA18<conver_limit " % stock_code)
                         continue
@@ -234,12 +230,16 @@ def run_buy_rule(weekly_line_ema_result_id: int):
                   params=["1", run_status_desc, time_run_begin, time_run_end, weekly_line_ema_result_id])
     # 开始保存股票待购买信息
     for code in buy_stock_list:
-        # 需要考虑股票池中是否已经有购买的股票，如果有还未卖出的，则不再新增
-        common.insert(basic_conf.cfg_sql_insert_stock_hold, params=[code, time_run_end, time_run_end, 0, 0, 0, 0, 0,
-                                                                    weekly_line_ema_result_id])
+        # 需要考虑股票池中该股票代码是否存在交易未结束的记录 （股票状态，0未购买、1暂停购买、2卖出中、3暂定卖出、4交易结束）
+        exist_sql = basic_conf.cfg_sql_select_stock_hold_by_code_status
+        count = common.select_count(exist_sql, params=[code, '4'])
+        logger.info("count:%s" % count)
+        if count == 0:
+            common.insert(basic_conf.cfg_sql_insert_stock_hold, params=[code, time_run_end, time_run_end, 0, 0, 0, 0, 0,
+                                                                        weekly_line_ema_result_id])
     return run_result_code
 
 
 if __name__ == '__main__':
-    run_buy_rule(weekly_line_ema_result_id=37)
+    run_buy_rule(weekly_line_ema_result_id=46)
 

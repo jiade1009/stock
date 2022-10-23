@@ -212,7 +212,7 @@ def get_hist_data_cache_2(item, date_weekly_research, date_weekly_start):
                 # 判断是否是同一个周期内的交易日
                 in_week = date_utils.in_same_week(previous_1_date, date_weekly_research)
                 if in_week:
-                    logger.info("在同一个交易周期，则直接将查询到的最新的交易数据替换历史数据的倒数第一条")
+                    # logger.info("在同一个交易周期，则直接将查询到的最新的交易数据替换历史数据的倒数第一条")
                     previous_1_last_but_one = previous_1_data.iloc[[len(previous_1_data)-2]]  # 倒数第二条周线数据
                     last_but_one_date = previous_1_last_but_one["date"].tolist()[0]
                     # 下载最新二个周期的历史行情信息，可能存在异常：如果date_weekly_research正好处在本周交易日，
@@ -230,7 +230,7 @@ def get_hist_data_cache_2(item, date_weekly_research, date_weekly_start):
                                         (code, date_weekly_start, date_weekly_research))
                             return previous_1_data
                 else:
-                    logger.info("不在同一个交易周期，则直接将查询到的最新的交易数据concat到历史数据")
+                    # logger.info("不在同一个交易周期，则直接将查询到的最新的交易数据concat到历史数据")
                     previous_1_last_one = previous_1_data.iloc[[len(previous_1_data)-1]]  # 倒数第一条周线数据
                     # 下载最新二个周期的历史行情信息，可能存在异常：如果date_weekly_research正好处在本周交易日，
                     # 且不是当天交易日，那么本周的周线会读取不到，因此判断，如果只有查询到一条数据，那么就不读取本地文件
@@ -243,7 +243,7 @@ def get_hist_data_cache_2(item, date_weekly_research, date_weekly_start):
                             previous_1_data.concat(last_2_weekly_df[[1]], ignore_index=True)
                             previous_1_data.to_pickle(cache_file, compression="gzip")
                             # 将新数据写入新文件内
-                            logger.info("####### get previous data from history, write new file ####### %s %s %s" %
+                            logger.info("####### 周线数据相同，追加一条新周线记录 ####### %s %s %s" %
                                         (code, date_weekly_start, date_weekly_research))
                             return previous_1_data
         # 未读取到上一个交易日的文件，从ak下载最新的周线数据

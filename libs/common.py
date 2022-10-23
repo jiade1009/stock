@@ -3,29 +3,33 @@
 
 # apk add py-mysqldb or
 
-import platform
 import datetime
-import time
-import sys
 import os
-import MySQLdb
-from sqlalchemy import create_engine
-from sqlalchemy.types import NVARCHAR
-from sqlalchemy import inspect
-import pandas as pd
+import sys
+import time
 import traceback
+
+import MySQLdb
 import akshare as ak
-from log.logUtils import logger
+import pandas as pd
+from dbutils.pooled_db import PooledDB
+from sqlalchemy import create_engine
+from sqlalchemy import inspect
+from sqlalchemy.types import NVARCHAR
+
 import libs.basic_conf as basic_conf
+from log.logUtils import logger
 
 # 使用环境变量获得数据库。兼容开发模式可docker模式。
 MYSQL_HOST = os.environ.get('MYSQL_HOST') if (os.environ.get('MYSQL_HOST') is not None) else basic_conf.cfg_mysql_host
 MYSQL_USER = os.environ.get('MYSQL_USER') if (os.environ.get('MYSQL_USER') is not None) else basic_conf.cfg_mysql_user
 MYSQL_PWD = os.environ.get('MYSQL_PWD') if (os.environ.get('MYSQL_PWD') is not None) else basic_conf.cfg_mysql_pwd
 MYSQL_DB = os.environ.get('MYSQL_DB') if (os.environ.get('MYSQL_DB') is not None) else basic_conf.cfg_mysql_db
+MYSQL_PORT = os.environ.get('MYSQL_PORT') if (os.environ.get('MYSQL_PORT') is not None) else basic_conf.cfg_mysql_port
 
-logger.debug("MYSQL_HOST :%s, MYSQL_USER :%s, MYSQL_DB :%s", MYSQL_HOST, MYSQL_USER, MYSQL_DB)
-MYSQL_CONN_URL = "mysql+mysqldb://" + MYSQL_USER + ":" + MYSQL_PWD + "@" + MYSQL_HOST + ":3306/" + MYSQL_DB + "?charset=utf8mb4"
+logger.debug("MYSQL_HOST:%s, MYSQL_USER:%s, MYSQL_DB:%s, MYSQL_PORT:%s", MYSQL_HOST, MYSQL_USER, MYSQL_DB, MYSQL_PORT)
+MYSQL_CONN_URL = "mysql+mysqldb://" + MYSQL_USER + ":" + MYSQL_PWD + "@" + MYSQL_HOST + ":" + MYSQL_PORT + "/" \
+                 + MYSQL_DB + "?charset=utf8mb4"
 logger.info("MYSQL_CONN_URL : %s", MYSQL_CONN_URL)
 
 __version__ = "2.0.0"
@@ -37,21 +41,30 @@ def engine():
 
 
 def engine_to_db(to_db):
-    MYSQL_CONN_URL_NEW = "mysql+mysqldb://" + MYSQL_USER + ":" + MYSQL_PWD + "@" + MYSQL_HOST + ":3306/" + to_db \
-                         + "?charset=utf8mb4"
+    MYSQL_CONN_URL_NEW = "mysql+mysqldb://" + MYSQL_USER + ":" + MYSQL_PWD + "@" + MYSQL_HOST + ":" + MYSQL_PORT + "/" \
+                         + to_db + "?charset=utf8mb4"
     # echo = True 是为了方便 控制台 logging 输出一些sql信息，默认是False
     return create_engine(MYSQL_CONN_URL_NEW, encoding='utf8', convert_unicode=True, echo=True)
 
 
 def conn():
+    return conn_with_commit(True)
+
+
+def conn_with_commit(autocommit: bool):
+    """
+    是否自动提交事务，如果为False，需要自己手动调用commit方法
+    :param autocommit:
+    :return:
+    """
     # 通过数据库链接 engine。
     try:
         db = MySQLdb.connect(MYSQL_HOST, MYSQL_USER, MYSQL_PWD, MYSQL_DB, charset="utf8")
         # db.autocommit = True
     except Exception as e:
         logger.error("conn error : %s %s", e.__class__.__name__, e)
-    db.autocommit(on=True)
-    return db.cursor()
+    db.autocommit(on=autocommit)
+    return db
 
 
 def insert_db(data, table_name, write_index, primary_keys):
@@ -109,7 +122,7 @@ def insert(sql, params=()):
     :return: 返回新插入的数据id
     """
     new_id = None
-    with conn() as db:
+    with conn().cursor() as db:
         logger.info("insert sql: %s", sql)
         try:
             db.execute(sql, params)
@@ -127,12 +140,29 @@ def insert_batch(sql, params=[()]):
     :param params: 传递元祖类型的list集合
     :return:
     """
-    with conn() as db:
+    with conn().cursor() as db:
         logger.info("insert sql: %s", sql)
         try:
             db.executemany(sql, params)
         except Exception as e:
             logger.error("insert sql error :%s %s", e.__class__.__name__, e)
+
+
+def insert_many_by_transaction(sql_many: list, params=[()]):
+    try:
+        con = conn_with_commit(autocommit=False)
+        db = con.cursor()
+        for i in range(0, len(sql_many)):
+            sql = sql_many[i]
+            param = params[i]
+            db.execute(sql, param)
+        db.close()
+        con.commit()
+        con.close()
+    except Exception as e:
+        db.close()
+        con.rollback()
+        logger.error("insert sql error :%s %s", e.__class__.__name__, e)
 
 
 def select(sql, params=()):
@@ -142,7 +172,7 @@ def select(sql, params=()):
     :param params:
     :return:
     """
-    with conn() as db:
+    with conn().cursor() as db:
         logger.info("select sql:%s", sql)
         try:
             db.execute(sql, params)
@@ -159,7 +189,7 @@ def select_count(sql, params=()) -> int:
     :param params:
     :return:
     """
-    with conn() as db:
+    with conn().cursor() as db:
         logger.info("select_count sql:%s", sql)
         try:
             db.execute(sql, params)

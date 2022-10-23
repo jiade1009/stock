@@ -2,7 +2,6 @@
 # 调用os，sys模块
 import os
 import sys
-import datetime
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath或者os.path.dirname(__file__)))
 # BASE_DIR2 = os.path.abspath(os.path.join(os.getcwd(), ".."))
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -10,14 +9,14 @@ sys.path.append(BASE_DIR)
 # sys.path.append("/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9")
 # sys.path.append("/Users/sam/Library/Python/3.9/lib/python/site-packages")
 # sys.path.append("/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages")
-
+import datetime
 from log.logUtils import logger
 import libs.common as common
 import libs.basic_conf as basic_conf
 import jobs.stock_basic_info_job as stock_basic_info_job
 import jobs.stock_weekly_line_job as stock_weekly_line_job
 import jobs.stock_weekly_line_ema_job as stock_weekly_line_ema_job
-import jobs.stock_buy_job as stock_buy_job
+import jobs.stock_run_buy_rule_job as stock_buy_job
 
 
 if __name__ == '__main__':
